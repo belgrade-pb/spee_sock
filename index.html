@@ -4,23 +4,84 @@
     <meta name="viewport" content="width=device-width,initial-scale=1.0">
     <title>Socket.IO chat</title>
     <style>
-        body { margin: 0; padding-bottom: 3rem; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif; }
+        body {
+            margin: 0;
+            padding-bottom: 3rem;
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+        }
 
-        #form { background: rgba(0, 0, 0, 0.15); padding: 0.25rem; position: fixed; bottom: 0; left: 0; right: 0; display: flex; height: 3rem; box-sizing: border-box; backdrop-filter: blur(10px); }
-        #input { border: none; padding: 0 1rem; flex-grow: 1; border-radius: 2rem; margin: 0.25rem; }
-        #input:focus { outline: none; }
-        #form > button { background: #333; border: none; padding: 0 1rem; margin: 0.25rem; border-radius: 3px; outline: none; color: #fff; }
+        #form {
+            padding: 0.25rem;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            display: flex;
+            box-sizing: border-box;
+            backdrop-filter: blur(10px);
+        }
 
-        #messages { list-style-type: none; margin: 0; padding: 0; }
-        #messages > li { padding: 0.5rem 1rem; }
-        #messages > li:nth-child(odd) { background: #efefef; }
+        #addCatalogInput:focus {
+            outline: none;
+        }
+
+        #form > button {
+            background: #333;
+            border: none;
+            padding: 0 1rem;
+            margin: 0.25rem;
+            border-radius: 3px;
+            outline: none;
+            color: #fff;
+        }
+
+        .pull-right {
+            float: right !important;
+        }
+
+        .action-button {
+            margin-right: 5pt;
+        }
     </style>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.5/dist/css/bootstrap.min.css" rel="stylesheet"
+          integrity="sha384-SgOJa3DmI69IUzQ2PVdRZhwQ+dy64/BUtbMJw1MZ8t5HZApcHrRKUc4W0kG879m7" crossorigin="anonymous">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/3.3.7/css/bootstrap.min.css" rel="stylesheet">
+</head>
 </head>
 <body>
-<ul id="messages"></ul>
-<form id="form" action="">
-    <input id="input" autocomplete="off" /><button>Send</button>
-</form>
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.5/dist/js/bootstrap.bundle.min.js"
+        integrity="sha384-k6d4wzSIapyDyv1kpU366/PK5hCdSbCRGRCMv+eplOQJWyd1fbcAu9OCUj5zNLiq"
+        crossorigin="anonymous"></script>
+
+<div class="container" style="padding-top: 10pt">
+    <div class="col-md-12">
+        <div class="panel panel-default">
+            <div class="panel-heading">
+                Shopping catalogues
+            </div>
+            <div class="panel-body">
+                <table class="table table-condensed table-striped">
+                    <thead>
+                    <tr>
+                        <th>Name</th>
+                        <th>Action</th>
+                    </tr>
+                    </thead>
+                    <tbody id="catalogues">
+                    </tbody>
+                </table>
+            </div>
+            <div class="panel-footer">
+                <form id="form" action="">
+                    <input id="addCatalogInput" type="text" class="form-control" autocomplete="off"/>
+                    <button class='btn btn-primary'>Add new catalog</button>
+                </form>
+            </div>
+
+        </div>
+
+    </div>
+</div>
+
 <script src="/socket.io/socket.io.js"></script>
 <script>
     let counter = 0;
@@ -34,24 +95,66 @@
     });
 
     const form = document.getElementById('form');
-    const input = document.getElementById('input');
-    const messages = document.getElementById('messages');
+    const addCatalogInput = document.getElementById('addCatalogInput');
+    const catalogues = document.getElementById('catalogues');
 
     form.addEventListener('submit', (e) => {
         e.preventDefault();
-        if (input.value) {
+        if (addCatalogInput.value) {
             const clientOffset = `${socket.id}-${counter++}`;
-            socket.emit('chat message', input.value, clientOffset);
-            input.value = '';
+            socket.emit('add_catalog', addCatalogInput.value, clientOffset);
+            addCatalogInput.value = '';
         }
     });
 
-    socket.on('chat message', (msg, serverOffset) => {
-        const item = document.createElement('li');
-        item.textContent = msg;
-        messages.appendChild(item);
-        window.scrollTo(0, document.body.scrollHeight);
-        socket.auth.serverOffset = serverOffset;
+    socket.on('update', (msg) => {
+        let shoppingList = msg.data;
+        catalogues.innerHTML = "";
+        shoppingList.forEach((shoppingListItem) => {
+            let html = " <tr class=\"accordion-toggle\">\n" +
+                "                            <td><input type=\"text\" class=\"form-control\"  value=" + shoppingListItem.name + "></td>\n" +
+                "                            <td> <span class='pull-right button-group'>" +
+                "<button type='button' class='btn btn-primary action-button'><span class='glyphicon edit'></span>Edit</button>" +
+                "<button type='button' class='btn btn-danger action-button'><span class='glyphicon glyphicon-remove'></span> Delete</button>" +
+                "</span></td>\n" +
+                "                        </tr>\n" +
+                "\n" +
+                "                        <tr>\n" +
+                "                            <td colspan=\"12\" style=\"padding: 0 30pt\">\n" +
+                "                                <div class=\"accordian-body\" id=\"demo1\">\n" +
+                "                                    <table class=\"table table-striped\">\n" +
+                "                                        <thead>\n" +
+                "                                        <tr class=\"info\">\n" +
+                "                                            <th>Name</th>\n" +
+                "                                            <th>Action</th>\n" +
+                "                                        </tr>\n" +
+                "                                        </thead>\n" +
+                "                                        <tbody>\n";
+            let products = shoppingListItem.products;
+            products.forEach((product) => {
+                html +=
+                    "                                        <tr>\n" +
+                    "                                            <td><input type=\"text\" class=\"form-control\"  value=" + product.name + "></td>\n" +
+                    "                                            <td>" +
+                    "<button type='button' class='btn btn-primary action-button'><span class='glyphicon edit'></span> Edit</button>" +
+                    "<button type='button' class='btn btn-danger action-button'><span class='glyphicon glyphicon-remove'></span> Delete</button>" +
+                    "                                           </td>\n" +
+                    "                                        </tr>\n"
+            });
+
+            html +=
+                "                                        </tbody>\n" +
+                "                                    </table>\n" +
+                "\n" +
+                "                                </div>\n" +
+                "                            </td>\n" +
+                "                        </tr>"
+
+            catalogues.insertAdjacentHTML("beforeend", html);
+        });
+
+        // window.scrollTo(0, document.body.scrollHeight);
+        // socket.auth.serverOffset = serverOffset;
     });
 </script>
 </body>
