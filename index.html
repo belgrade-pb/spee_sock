@@ -10,7 +10,7 @@
             font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
         }
 
-        #form {
+        .addItemForm {
             padding: 0.25rem;
             bottom: 0;
             left: 0;
@@ -24,7 +24,7 @@
             outline: none;
         }
 
-        #form > button {
+        .addItemForm > button {
             background: #333;
             border: none;
             padding: 0 1rem;
@@ -40,6 +40,10 @@
 
         .action-button {
             margin-right: 5pt;
+        }
+
+        .product-body {
+            padding: 5pt;
         }
     </style>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.5/dist/css/bootstrap.min.css" rel="stylesheet"
@@ -71,7 +75,7 @@
                 </table>
             </div>
             <div class="panel-footer">
-                <form id="form" action="">
+                <form id="addCatalogue" action="" class="addItemForm">
                     <input id="addCatalogInput" type="text" class="form-control" autocomplete="off"/>
                     <button class='btn btn-primary'>Add new catalog</button>
                 </form>
@@ -94,34 +98,95 @@
         retries: 3,
     });
 
-    const form = document.getElementById('form');
+    const form = document.getElementById('addCatalogue');
     const addCatalogInput = document.getElementById('addCatalogInput');
     const catalogues = document.getElementById('catalogues');
 
     form.addEventListener('submit', (e) => {
         e.preventDefault();
         if (addCatalogInput.value) {
-            const clientOffset = `${socket.id}-${counter++}`;
-            socket.emit('add_catalog', addCatalogInput.value, clientOffset);
+            let data = {
+                name: addCatalogInput.value
+            };
+            socket.emit('add_catalog', data, (response) => {
+                console.log('response', response);
+            });
             addCatalogInput.value = '';
         }
     });
 
-    socket.on('update', (msg) => {
-        let shoppingList = msg.data;
+    function addProduct(catalogueId) {
+        let addProductInput = document.getElementById('addProductInput_' + catalogueId);
+        if (addProductInput.value) {
+            let data = {
+                name: addProductInput.value,
+                catalogId: catalogueId,
+            };
+            socket.emit('add_product', data, (response) => {
+                console.log('response', response);
+            });
+            addProductInput.value = '';
+        }
+    }
+
+    function deleteProduct(productId) {
+        let data = {
+            id: productId
+        };
+        socket.emit('delete_product', data, (response) => {
+            console.log('response', response);
+        });
+    }
+
+    function editProduct(productId) {
+        let productInput = document.getElementById('productName_' + productId);
+        if (productInput.value) {
+            let data = {
+                name: productInput.value,
+                id: productId,
+            };
+            socket.emit('update_product', data, (response) => {
+                console.log('response', response);
+            });
+        }
+    }
+
+    function deleteCatalogue(catalogueId) {
+        console.log("delete catalogueId = " + catalogueId);
+        let data = {
+            id: catalogueId
+        };
+        socket.emit('delete_catalog', data, (response) => {
+            console.log('response', response);
+        });
+    }
+
+    function editCatalogue(catalogueId) {
+        let catalogueInput = document.getElementById('catalogueName_' + catalogueId);
+        if (catalogueInput.value) {
+            let data = {
+                name: catalogueInput.value,
+                id: catalogueId,
+            };
+            socket.emit('update_catalog', data, (response) => {
+                console.log('response', response);
+            });
+        }
+    }
+
+    socket.on('update', (shoppingList) => {
         catalogues.innerHTML = "";
         shoppingList.forEach((shoppingListItem) => {
             let html = " <tr class=\"accordion-toggle\">\n" +
-                "                            <td><input type=\"text\" class=\"form-control\"  value=" + shoppingListItem.name + "></td>\n" +
+                "                            <td><input id='catalogueName_" + shoppingListItem.id + "' type=\"text\" class=\"form-control\"  value=" + shoppingListItem.name + "></td>\n" +
                 "                            <td> <span class='pull-right button-group'>" +
-                "<button type='button' class='btn btn-primary action-button'><span class='glyphicon edit'></span>Edit</button>" +
-                "<button type='button' class='btn btn-danger action-button'><span class='glyphicon glyphicon-remove'></span> Delete</button>" +
+                "<button type='button' class='btn btn-primary action-button' onclick='editCatalogue(" + shoppingListItem.id + ")'><span class='glyphicon edit'></span>Edit</button>" +
+                "<button type='button' class='btn btn-danger action-button' onclick='deleteCatalogue(" + shoppingListItem.id + ")'><span class='glyphicon glyphicon-remove'></span> Delete</button>" +
                 "</span></td>\n" +
                 "                        </tr>\n" +
-                "\n" +
                 "                        <tr>\n" +
                 "                            <td colspan=\"12\" style=\"padding: 0 30pt\">\n" +
-                "                                <div class=\"accordian-body\" id=\"demo1\">\n" +
+                "                                <div class=\"product-body\" id=\"demo1\">\n" +
                 "                                    <table class=\"table table-striped\">\n" +
                 "                                        <thead>\n" +
                 "                                        <tr class=\"info\">\n" +
@@ -134,10 +199,10 @@
             products.forEach((product) => {
                 html +=
                     "                                        <tr>\n" +
-                    "                                            <td><input type=\"text\" class=\"form-control\"  value=" + product.name + "></td>\n" +
+                    "                                            <td><input id='productName_" + product.id + "' type=\"text\" class=\"form-control\"  value=" + product.name + "></td>\n" +
                     "                                            <td>" +
-                    "<button type='button' class='btn btn-primary action-button'><span class='glyphicon edit'></span> Edit</button>" +
-                    "<button type='button' class='btn btn-danger action-button'><span class='glyphicon glyphicon-remove'></span> Delete</button>" +
+                    "<button type='button' class='btn btn-primary action-button' onclick='editProduct(" + product.id + ")'><span class='glyphicon edit'></span> Edit</button>" +
+                    "<button type='button' class='btn btn-danger action-button' onclick='deleteProduct(" + product.id + ")'><span class='glyphicon glyphicon-remove'></span> Delete</button>" +
                     "                                           </td>\n" +
                     "                                        </tr>\n"
             });
@@ -145,7 +210,10 @@
             html +=
                 "                                        </tbody>\n" +
                 "                                    </table>\n" +
-                "\n" +
+                "                <div class='addItemForm'>\n" +
+                "                    <input id='addProductInput_" + shoppingListItem.id + "' type=\"text\" class=\"form-control\" autocomplete=\"off\"/>\n" +
+                "                    <button class='btn btn-primary' onclick='addProduct(" + shoppingListItem.id + ")'>Add new product</button>\n" +
+                "                </div>" +
                 "                                </div>\n" +
                 "                            </td>\n" +
                 "                        </tr>"
