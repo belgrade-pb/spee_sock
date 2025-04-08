@@ -85,16 +85,10 @@ if (cluster.isPrimary) {
             console.log('add_catalog');
             try {
                 let result = await db.run('INSERT INTO shoping_catalog (name, status) VALUES (?, ?)', data.name, 1);
-                console.log(result.lastID)
-                callback(result.lastID);
+                callback();
                 sendUpdate(socket);
             } catch (e) {
                 console.log('error', e);
-                if (e.errno === 19 ) {
-                    callback();
-                } else {
-                }
-                return;
             }
             callback();
         });
@@ -103,16 +97,34 @@ if (cluster.isPrimary) {
             console.log('add_product');
             try {
                 let result = await db.run('INSERT INTO products (name, catalog_id, status) VALUES (?, ?, ?)', data.name, data.catalogId, 1);
-                console.log(result.lastID)
+                callback();
+                sendUpdate(socket);
+            } catch (e) {
+                console.log('error', e);
+            }
+            callback();
+        });
+
+        socket.on('update_product', async (data, callback) => {
+            console.log('update_product');
+            try {
+                let result = await db.run('UPDATE products SET name = ? WHERE id = ?', data.name, data.id);
                 callback(result.lastID);
                 sendUpdate(socket);
             } catch (e) {
                 console.log('error', e);
-                if (e.errno === 19 ) {
-                    callback();
-                } else {
-                }
-                return;
+            }
+            callback();
+        });
+
+        socket.on('update_catalog', async (data, callback) => {
+            console.log('update_catalog');
+            try {
+                let result = await db.run('UPDATE shoping_catalog SET name = ? WHERE id = ?', data.name, data.id);
+                callback(result.lastID);
+                sendUpdate(socket);
+            } catch (e) {
+                console.log('error', e);
             }
             callback();
         });

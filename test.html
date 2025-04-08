@@ -8,11 +8,12 @@
 
 Add catalog: <input type="text" id="catalogName" /> <button onclick="addCatalog()">set</button><br/>
 Add product: name: <input type="text" id="productName" /> parentId  <input type="text" id="catalogId" /> <button onclick="addProduct()">set</button><br/>
+Update product: name: <input type="text" id="productNameUpd" /> id  <input type="text" id="productIdUpd" /> <button onclick="updateProduct()">set</button><br/>
+Update catalog: name: <input type="text" id="catalogNameUpd" /> id  <input type="text" id="catalogIdUpd" /> <button onclick="updateCatalog()">set</button><br/>
 Get all: <button onclick="getAll()">get all</button><br/>
 
 <script src="/socket.io/socket.io.js"></script>
 <script>
-    let counter = 0;
     const socket = io({
         auth: {
             serverOffset: 0
@@ -26,7 +27,6 @@ Get all: <button onclick="getAll()">get all</button><br/>
         let name = document.getElementById('catalogName').value;
         var data = {
             name: name,
-            id: socket.id
         };
         socket.emit('add_catalog', data, (response) => {
             console.log('response', response);
@@ -40,9 +40,34 @@ Get all: <button onclick="getAll()">get all</button><br/>
         var data = {
             name: name,
             catalogId: catalogId,
-            id: socket.id
         };
         socket.emit('add_product', data, (response) => {
+            console.log('response', response);
+        });
+    }
+
+    function updateProduct() {
+        console.log('updateProduct');
+        let name = document.getElementById('productNameUpd').value;
+        let id = document.getElementById('productIdUpd').value;
+        var data = {
+            name: name,
+            id: id,
+        };
+        socket.emit('update_product', data, (response) => {
+            console.log('response', response);
+        });
+    }
+
+    function updateCatalog() {
+        console.log('updateCatalog');
+        let name = document.getElementById('catalogNameUpd').value;
+        let id = document.getElementById('catalogIdUpd').value;
+        var data = {
+            name: name,
+            id: id,
+        };
+        socket.emit('update_catalog', data, (response) => {
             console.log('response', response);
         });
     }
