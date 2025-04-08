@@ -42,7 +42,28 @@ if (cluster.isPrimary) {
     );
   `);
 
-
+    const testData = {
+        data:[
+            {id:1, name:'catalog 1', products:[
+                    {id:1, name:'product 1', status:1, parrent_id:1},
+                    {id:2, name:'product 2', status:1, parrent_id:1},
+                    {id:3, name:'product 3', status:1, parrent_id:1},
+                ]
+            },
+            {id:2, name:'catalog 2', products:[
+                    {id:4, name:'product 4', status:1, parrent_id:2},
+                    {id:5, name:'product 5', status:1, parrent_id:2},
+                    {id:6, name:'product 6', status:1, parrent_id:2},
+                ]
+            },
+            {id:3, name:'catalog 3', products:[
+                    {id:7, name:'product 7', status:1, parrent_id:3},
+                    {id:8, name:'product 8', status:1, parrent_id:3},
+                    {id:9, name:'product 9', status:1, parrent_id:3},
+                ]
+            }
+        ]
+    }
     const app = express();
     const server = createServer(app);
     const io = new Server(server, {
@@ -82,28 +103,7 @@ if (cluster.isPrimary) {
 
         socket.on('get_all', async (data, callback) => {
             console.log('get_all');
-            callback({
-                data:[
-                    {id:1, name:'catalog 1', products:[
-                            {id:1, name:'product 1', status:1, parrent_id:1},
-                            {id:2, name:'product 2', status:1, parrent_id:1},
-                            {id:3, name:'product 3', status:1, parrent_id:1},
-                        ]
-                    },
-                    {id:2, name:'catalog 2', products:[
-                            {id:4, name:'product 4', status:1, parrent_id:2},
-                            {id:5, name:'product 5', status:1, parrent_id:2},
-                            {id:6, name:'product 6', status:1, parrent_id:2},
-                        ]
-                    },
-                    {id:3, name:'catalog 3', products:[
-                            {id:7, name:'product 7', status:1, parrent_id:3},
-                            {id:8, name:'product 8', status:1, parrent_id:3},
-                            {id:9, name:'product 9', status:1, parrent_id:3},
-                        ]
-                    }
-                ]
-            })
+            callback(testData)
             // try {
             //     await db.all('SELECT * FROM shoping_catalog', {}, (_err, result) => {
             //         // socket.emit('chat message', row.content, row.id);
@@ -121,16 +121,17 @@ if (cluster.isPrimary) {
         });
 
         if (!socket.recovered) {
-            try {
-                await db.each('SELECT id, content FROM shoping_catalog WHERE id > ?',
-                    [socket.handshake.auth.serverOffset || 0],
-                    (_err, row) => {
-                        socket.emit('chat message', row.content, row.id);
-                    }
-                )
-            } catch (e) {
-                // something went wrong
-            }
+            socket.emit('update', testData);
+            // try {
+            //     await db.each('SELECT id, content FROM shoping_catalog WHERE id > ?',
+            //         [socket.handshake.auth.serverOffset || 0],
+            //         (_err, row) => {
+            //             socket.emit('chat message', row.content, row.id);
+            //         }
+            //     )
+            // } catch (e) {
+            //     // something went wrong
+            // }
         }
     });
 

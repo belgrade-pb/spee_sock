@@ -56,6 +56,11 @@ Get all: <button onclick="getAll()">set</button>
     //     window.scrollTo(0, document.body.scrollHeight);
     //     socket.auth.serverOffset = serverOffset;
     // });
+
+    socket.on('update', (msg) => {
+       console.log('on update', msg);
+    });
+
 </script>
 </body>
 </html>
