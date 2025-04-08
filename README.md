@@ -1,2 +1,2 @@
 # spee_sock
-Spee sock of pokoopock
+Spee sock of pokoopock.
