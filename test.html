@@ -6,10 +6,12 @@
 </head>
 <body>
 
-Add catalog: <input type="text" id="catalogName" /> <button onclick="addCatalog()">set</button><br/>
-Add product: name: <input type="text" id="productName" /> parentId  <input type="text" id="catalogId" /> <button onclick="addProduct()">set</button><br/>
-Update product: name: <input type="text" id="productNameUpd" /> id  <input type="text" id="productIdUpd" /> <button onclick="updateProduct()">set</button><br/>
-Update catalog: name: <input type="text" id="catalogNameUpd" /> id  <input type="text" id="catalogIdUpd" /> <button onclick="updateCatalog()">set</button><br/>
+Add catalog: <input type="text" id="catalogName" /> <button onclick="addCatalog()">go</button><br/>
+Add product: name: <input type="text" id="productName" /> parentId  <input type="text" id="catalogId" /> <button onclick="addProduct()">go</button><br/>
+Update product: name: <input type="text" id="productNameUpd" /> id  <input type="text" id="productIdUpd" /> <button onclick="updateProduct()">go</button><br/>
+Update catalog: name: <input type="text" id="catalogNameUpd" /> id  <input type="text" id="catalogIdUpd" /> <button onclick="updateCatalog()">go</button><br/>
+Delete catalog: id  <input type="text" id="catalogIdDlt" /> <button onclick="deleteCatalog()">go</button><br/>
+Delete product: id  <input type="text" id="productIdDlt" /> <button onclick="deleteProduct()">go</button><br/>
 Get all: <button onclick="getAll()">get all</button><br/>
 
 <script src="/socket.io/socket.io.js"></script>
@@ -68,6 +70,28 @@ Get all: <button onclick="getAll()">get all</button><br/>
             id: id,
         };
         socket.emit('update_catalog', data, (response) => {
+            console.log('response', response);
+        });
+    }
+
+    function deleteCatalog() {
+        console.log('deleteCatalog');
+        let id = document.getElementById('catalogIdDlt').value;
+        var data = {
+            id: id,
+        };
+        socket.emit('delete_catalog', data, (response) => {
+            console.log('response', response);
+        });
+    }
+
+    function deleteProduct() {
+        console.log('deleteProduct');
+        let id = document.getElementById('productIdDlt').value;
+        var data = {
+            id: id,
+        };
+        socket.emit('delete_product', data, (response) => {
             console.log('response', response);
         });
     }

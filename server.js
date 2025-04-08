@@ -84,7 +84,7 @@ if (cluster.isPrimary) {
         socket.on('add_catalog', async (data, callback) => {
             console.log('add_catalog');
             try {
-                let result = await db.run('INSERT INTO shoping_catalog (name, status) VALUES (?, ?)', data.name, 1);
+                await db.run('INSERT INTO shoping_catalog (name, status) VALUES (?, ?)', data.name, 1);
                 callback();
                 sendUpdate(socket);
             } catch (e) {
@@ -96,7 +96,7 @@ if (cluster.isPrimary) {
         socket.on('add_product', async (data, callback) => {
             console.log('add_product');
             try {
-                let result = await db.run('INSERT INTO products (name, catalog_id, status) VALUES (?, ?, ?)', data.name, data.catalogId, 1);
+                await db.run('INSERT INTO products (name, catalog_id, status) VALUES (?, ?, ?)', data.name, data.catalogId, 1);
                 callback();
                 sendUpdate(socket);
             } catch (e) {
@@ -108,8 +108,8 @@ if (cluster.isPrimary) {
         socket.on('update_product', async (data, callback) => {
             console.log('update_product');
             try {
-                let result = await db.run('UPDATE products SET name = ? WHERE id = ?', data.name, data.id);
-                callback(result.lastID);
+                await db.run('UPDATE products SET name = ? WHERE id = ?', data.name, data.id);
+                callback();
                 sendUpdate(socket);
             } catch (e) {
                 console.log('error', e);
@@ -120,8 +120,33 @@ if (cluster.isPrimary) {
         socket.on('update_catalog', async (data, callback) => {
             console.log('update_catalog');
             try {
-                let result = await db.run('UPDATE shoping_catalog SET name = ? WHERE id = ?', data.name, data.id);
-                callback(result.lastID);
+                await db.run('UPDATE shoping_catalog SET name = ? WHERE id = ?', data.name, data.id);
+                callback();
+                sendUpdate(socket);
+            } catch (e) {
+                console.log('error', e);
+            }
+            callback();
+        });
+
+        socket.on('delete_catalog', async (data, callback) => {
+            console.log('delete_catalog');
+            try {
+                await db.run('DELETE FROM products WHERE catalog_id = ?', data.id);
+                await db.run('DELETE FROM shoping_catalog WHERE id = ?', data.id);
+                callback();
+                sendUpdate(socket);
+            } catch (e) {
+                console.log('error', e);
+            }
+            callback();
+        });
+
+        socket.on('delete_product', async (data, callback) => {
+            console.log('delete_product');
+            try {
+                await db.run('DELETE FROM products WHERE id = ?', data.id);
+                callback();
                 sendUpdate(socket);
             } catch (e) {
                 console.log('error', e);
