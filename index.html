@@ -88,8 +88,6 @@
 
 <script src="/socket.io/socket.io.js"></script>
 <script>
-    let counter = 0;
-
     const socket = io({
         auth: {
             serverOffset: 0
@@ -220,9 +218,6 @@
 
             catalogues.insertAdjacentHTML("beforeend", html);
         });
-
-        // window.scrollTo(0, document.body.scrollHeight);
-        // socket.auth.serverOffset = serverOffset;
     });
 </script>
 </body>
