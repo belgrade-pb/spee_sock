@@ -20,17 +20,28 @@ if (cluster.isPrimary) {
     setupPrimary();
 } else {
     const db = await open({
-        filename: 'chat.db',
+        filename: 'spee_sock' +
+            '.db',
         driver: sqlite3.Database
     });
 
     await db.exec(`
     CREATE TABLE IF NOT EXISTS shoping_catalog (
-      id INTEGER PRIMARY KEY AUTOINCREMENT,
-      client_offset TEXT UNIQUE,
-      content TEXT
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        name TEXT UNIQUE,
+        status INTEGER
     );
   `);
+
+    await db.exec(`
+    CREATE TABLE IF NOT EXISTS products (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        catalog_id INTEGER,
+        name TEXT UNIQUE,
+        status INTEGER
+    );
+  `);
+
 
     const app = express();
     const server = createServer(app);
@@ -45,21 +56,68 @@ if (cluster.isPrimary) {
         res.sendFile(join(__dirname, 'index.html'));
     });
 
+    app.get('/testui', (req, res) => {
+        res.sendFile(join(__dirname, 'test.html'));
+    });
+
     io.on('connection', async (socket) => {
-        socket.on('chat message', async (msg, clientOffset, callback) => {
-            let result;
+        socket.on('add_catalog', async (data, callback) => {
+            console.log('add_catalog');
             try {
-                result = await db.run('INSERT INTO shoping_catalog (content, client_offset) VALUES (?, ?)', msg, clientOffset);
+                let result = await db.run('INSERT INTO shoping_catalog (name, status) VALUES (?, ?)', data.name, 1);
+                console.log(result.lastID)
+                callback(result.lastID);
             } catch (e) {
-                if (e.errno === 19 /* SQLITE_CONSTRAINT */ ) {
+                console.log('error', e);
+                if (e.errno === 19 ) {
                     callback();
                 } else {
                     // nothing to do, just let the client retry
                 }
                 return;
             }
-            io.emit('chat message', msg, result.lastID);
+            // io.emit('chat message', msg, result.lastID);
             callback();
+        });
+
+        socket.on('get_all', async (data, callback) => {
+            console.log('get_all');
+            callback({
+                data:[
+                    {id:1, name:'catalog 1', products:[
+                            {id:1, name:'product 1', status:1, parrent_id:1},
+                            {id:2, name:'product 2', status:1, parrent_id:1},
+                            {id:3, name:'product 3', status:1, parrent_id:1},
+                        ]
+                    },
+                    {id:2, name:'catalog 2', products:[
+                            {id:4, name:'product 4', status:1, parrent_id:2},
+                            {id:5, name:'product 5', status:1, parrent_id:2},
+                            {id:6, name:'product 6', status:1, parrent_id:2},
+                        ]
+                    },
+                    {id:3, name:'catalog 3', products:[
+                            {id:7, name:'product 7', status:1, parrent_id:3},
+                            {id:8, name:'product 8', status:1, parrent_id:3},
+                            {id:9, name:'product 9', status:1, parrent_id:3},
+                        ]
+                    }
+                ]
+            })
+            // try {
+            //     await db.all('SELECT * FROM shoping_catalog', {}, (_err, result) => {
+            //         // socket.emit('chat message', row.content, row.id);
+            //         console.log('_err', _err);
+            //         console.log('result', result)
+            //         callback(result);
+            //     });
+            //
+            // } catch (e) {
+            //     console.log('error', e);
+            //     callback();
+            // }
+            // io.emit('chat message', msg, result.lastID);
+            // callback();
         });
 
         if (!socket.recovered) {

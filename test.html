@@ -1,0 +1,61 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta name="viewport" content="width=device-width,initial-scale=1.0">
+    <title>Socket.IO chat</title>
+</head>
+<body>
+
+Add catalog: <input type="text" id="catalogName" /> <button onclick="addCatalog()">set</button>
+Get all: <button onclick="getAll()">set</button>
+
+<script src="/socket.io/socket.io.js"></script>
+<script>
+    let counter = 0;
+    const socket = io({
+        auth: {
+            serverOffset: 0
+        },
+        ackTimeout: 10000,
+        retries: 3,
+    });
+
+    function addCatalog() {
+        console.log('addCatalog');
+        let name = document.getElementById('catalogName').value;
+        var data = {
+            name: name,
+            id: socket.id
+        };
+        socket.emit('add_catalog', data, (response) => {
+            console.log('response', response);
+        });
+    }
+
+    function getAll() {
+        console.log('getAll');
+        socket.emit('get_all', {}, (response, data) => {
+            console.log('response', response);
+            console.log('data', data);
+        });
+    }
+
+    // form.addEventListener('submit', (e) => {
+    //     e.preventDefault();
+    //     if (input.value) {
+    //         const clientOffset = `${socket.id}-${counter++}`;
+    //         socket.emit('chat message', input.value, clientOffset);
+    //         input.value = '';
+    //     }
+    // });
+
+    // socket.on('chat message', (msg, serverOffset) => {
+    //     const item = document.createElement('li');
+    //     item.textContent = msg;
+    //     messages.appendChild(item);
+    //     window.scrollTo(0, document.body.scrollHeight);
+    //     socket.auth.serverOffset = serverOffset;
+    // });
+</script>
+</body>
+</html>
