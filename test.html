@@ -6,8 +6,9 @@
 </head>
 <body>
 
-Add catalog: <input type="text" id="catalogName" /> <button onclick="addCatalog()">set</button>
-Get all: <button onclick="getAll()">set</button>
+Add catalog: <input type="text" id="catalogName" /> <button onclick="addCatalog()">set</button><br/>
+Add product: name: <input type="text" id="productName" /> parentId  <input type="text" id="catalogId" /> <button onclick="addProduct()">set</button><br/>
+Get all: <button onclick="getAll()">get all</button><br/>
 
 <script src="/socket.io/socket.io.js"></script>
 <script>
@@ -28,6 +29,20 @@ Get all: <button onclick="getAll()">set</button>
             id: socket.id
         };
         socket.emit('add_catalog', data, (response) => {
+            console.log('response', response);
+        });
+    }
+
+    function addProduct() {
+        console.log('addProduct');
+        let name = document.getElementById('productName').value;
+        let catalogId = document.getElementById('catalogId').value;
+        var data = {
+            name: name,
+            catalogId: catalogId,
+            id: socket.id
+        };
+        socket.emit('add_product', data, (response) => {
             console.log('response', response);
         });
     }
