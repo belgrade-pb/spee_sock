@@ -178,7 +178,7 @@
         catalogues.innerHTML = "";
         shoppingList.forEach((shoppingListItem) => {
             let html = " <tr class=\"accordion-toggle\">\n" +
-                "                            <td><input id='catalogueName_" + shoppingListItem.id + "' type=\"text\" class=\"form-control\"  value=" + shoppingListItem.name + "></td>\n" +
+                "                            <td><input id='catalogueName_" + shoppingListItem.id + "' type=\"text\" class=\"form-control\"  value='" + shoppingListItem.name + "'></td>\n" +
                 "                            <td> <span class='pull-right button-group'>" +
                 "<button type='button' class='btn btn-primary action-button' onclick='editCatalogue(" + shoppingListItem.id + ")'><span class='glyphicon edit'></span>Edit</button>" +
                 "<button type='button' class='btn btn-danger action-button' onclick='deleteCatalogue(" + shoppingListItem.id + ")'><span class='glyphicon glyphicon-remove'></span> Delete</button>" +
@@ -199,7 +199,7 @@
             products.forEach((product) => {
                 html +=
                     "                                        <tr>\n" +
-                    "                                            <td><input id='productName_" + product.id + "' type=\"text\" class=\"form-control\"  value=" + product.name + "></td>\n" +
+                    "                                            <td><input id='productName_" + product.id + "' type=\"text\" class=\"form-control\"  value='" + product.name + "'></td>\n" +
                     "                                            <td>" +
                     "<button type='button' class='btn btn-primary action-button' onclick='editProduct(" + product.id + ")'><span class='glyphicon edit'></span> Edit</button>" +
                     "<button type='button' class='btn btn-danger action-button' onclick='deleteProduct(" + product.id + ")'><span class='glyphicon glyphicon-remove'></span> Delete</button>" +
