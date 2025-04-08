@@ -86,7 +86,7 @@ if (cluster.isPrimary) {
             try {
                 await db.run('INSERT INTO shoping_catalog (name, status) VALUES (?, ?)', data.name, 1);
                 callback();
-                sendUpdate(socket);
+                sendUpdate();
             } catch (e) {
                 console.log('error', e);
             }
@@ -98,7 +98,7 @@ if (cluster.isPrimary) {
             try {
                 await db.run('INSERT INTO products (name, catalog_id, status) VALUES (?, ?, ?)', data.name, data.catalogId, 1);
                 callback();
-                sendUpdate(socket);
+                sendUpdate();
             } catch (e) {
                 console.log('error', e);
             }
@@ -110,7 +110,7 @@ if (cluster.isPrimary) {
             try {
                 await db.run('UPDATE products SET name = ? WHERE id = ?', data.name, data.id);
                 callback();
-                sendUpdate(socket);
+                sendUpdate();
             } catch (e) {
                 console.log('error', e);
             }
@@ -122,7 +122,7 @@ if (cluster.isPrimary) {
             try {
                 await db.run('UPDATE shoping_catalog SET name = ? WHERE id = ?', data.name, data.id);
                 callback();
-                sendUpdate(socket);
+                sendUpdate();
             } catch (e) {
                 console.log('error', e);
             }
@@ -135,7 +135,7 @@ if (cluster.isPrimary) {
                 await db.run('DELETE FROM products WHERE catalog_id = ?', data.id);
                 await db.run('DELETE FROM shoping_catalog WHERE id = ?', data.id);
                 callback();
-                sendUpdate(socket);
+                sendUpdate();
             } catch (e) {
                 console.log('error', e);
             }
@@ -147,7 +147,7 @@ if (cluster.isPrimary) {
             try {
                 await db.run('DELETE FROM products WHERE id = ?', data.id);
                 callback();
-                sendUpdate(socket);
+                sendUpdate();
             } catch (e) {
                 console.log('error', e);
             }
@@ -155,18 +155,18 @@ if (cluster.isPrimary) {
         });
 
         if (!socket.recovered) {
-            sendUpdate(socket);
+            sendUpdate();
         }
     });
 
-    async function sendUpdate(socket) {
+    async function sendUpdate() {
         try {
             let res = await db.all('SELECT * FROM shoping_catalog');
             for (let i = 0; i < res.length; i++) {
                 let products = await db.all('SELECT * FROM products WHERE catalog_id = ?', res[i].id);
                 res[i].products = products;
             }
-            socket.emit('update', res);
+            io.emit('update', res);
         } catch (e) {
             console.log('error', e);
         }
